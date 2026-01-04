@@ -1,7 +1,7 @@
 {
   "name": "@k13engineering/linux-dmabuf-allocator",
   "type": "module",
-  "description": "Boilerplate project",
+  "description": "Linux dmabuf allocator module",
   "files": [
     "dist"
   ],
@@ -13,10 +13,12 @@
   },
   "keywords": [
     "node",
-    "boilerplate"
+    "dmabuf",
+    "linux",
+    "allocator"
   ],
   "author": "Simon Kadisch",
-  "license": "Unlicense",
+  "license": "LGPL 2.1",
   "bugs": {
     "url": "https://github.com/k13-engineering/node-linux-dmabuf-allocator/issues"
   },
