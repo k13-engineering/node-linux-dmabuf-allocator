@@ -2,6 +2,9 @@
   "name": "@k13engineering/linux-dmabuf-allocator",
   "type": "module",
   "description": "Linux dmabuf allocator module",
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
     "dist"
   ],
