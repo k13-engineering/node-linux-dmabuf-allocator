@@ -98,7 +98,7 @@ const createDmabufHeapManager = ({
     specification
   }: {
     specification: TDmabufHeapSpecification
-  }) => {
+  }): TDmabufHeapInfo[] => {
     const availableHeaps = findAvailableDmabufHeapInfos();
 
     // eslint-disable-next-line complexity, max-statements
