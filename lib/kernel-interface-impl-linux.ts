@@ -16,8 +16,12 @@ const createDefaultDmabufHeapAllocatorLinuxInterface = (): TDmabufHeapKernelInte
   };
 
   const ioctl: C["ioctl"] = ({ fd, request, arg }) => {
-    const { errno } = nativeIoctl({ fd, request, arg });
-    return { errno };
+    const { errno, ret } = nativeIoctl({ fd, request, arg });
+    if (errno !== undefined) {
+      return { errno, ret: undefined };
+    }
+
+    return { errno, ret };
   };
 
   const dup = ({ fd }: { fd: number }): number => {
@@ -55,6 +59,55 @@ const createDefaultDmabufHeapAllocatorLinuxInterface = (): TDmabufHeapKernelInte
     }
   };
 
+  const fcntl: C["fcntl"] = ({ fd, cmd, arg }: { fd: number; cmd: number; arg: number }) => {
+    const { errno } = syscall({
+      syscallNumber: syscallNumbers.fcntl,
+      args: [BigInt(fd), BigInt(cmd), BigInt(arg)]
+    });
+
+    if (errno !== undefined) {
+      return { errno };
+    }
+
+    return { errno: undefined };
+  };
+
+  const textEncoder = new TextEncoder();
+
+  const memfd_create: C["memfd_create"] = ({ name, flags }: { name: string; flags: number }) => {
+
+    const nameAsBuffer = textEncoder.encode(`${name} \0`);
+
+    const { errno, ret } = syscall({
+      syscallNumber: syscallNumbers.memfd_create,
+      args: [
+        nameAsBuffer,
+        BigInt(flags)
+      ]
+    });
+
+    if (errno !== undefined) {
+      return {
+        errno,
+        memfd: undefined
+      };
+    }
+
+    return { errno: undefined, memfd: Number(ret) };
+  };
+
+  const ftruncate: C["ftruncate"] = ({ fd, length }: { fd: number; length: number }) => {
+    try {
+      nodeFs.ftruncateSync(fd, length);
+    } catch (e) {
+      return {
+        error: e as Error,
+      };
+    }
+
+    return { error: undefined };
+  };
+
   const close: C["close"] = ({ fd }) => {
     nodeFs.closeSync(fd);
   };
@@ -66,6 +119,9 @@ const createDefaultDmabufHeapAllocatorLinuxInterface = (): TDmabufHeapKernelInte
     dup,
     readdir,
     open,
+    fcntl,
+    memfd_create,
+    ftruncate,
     close
   };
 };

@@ -76,6 +76,20 @@ const createKernelInterfaceMock = ({
     return duppedFd;
   };
 
+  const fcntl: TKernelInterfaceMock["fcntl"] = () => {
+    return { errno: undefined };
+  };
+
+  const memfd_create: TKernelInterfaceMock["memfd_create"] = () => {
+    const memfd = nextFd;
+    nextFd += 1;
+    return { errno: undefined, memfd };
+  };
+
+  const ftruncate: TKernelInterfaceMock["ftruncate"] = () => {
+    return { error: undefined };
+  };
+
   const ioctl: TKernelInterfaceMock["ioctl"] = ({ fd, request, arg }) => {
     ioctlCalls = [...ioctlCalls, { fd, request, argCopy: new Uint8Array(arg) }];
 
@@ -90,7 +104,7 @@ const createKernelInterfaceMock = ({
       dataView.setUint32(8, allocatedFd, false);
     }
 
-    return { errno: undefined };
+    return { errno: undefined, ret: 0n };
   };
 
   const determinePageSize: TKernelInterfaceMock["determinePageSize"] = () => {
@@ -127,6 +141,9 @@ const createKernelInterfaceMock = ({
     close,
     readdir,
     open,
+    fcntl,
+    memfd_create,
+    ftruncate,
     mockInfo,
     setAvailableHeaps,
     setReaddirError,

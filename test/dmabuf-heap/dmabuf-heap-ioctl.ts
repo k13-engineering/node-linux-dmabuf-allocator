@@ -43,7 +43,7 @@ const createIoctlInterfaceMock = ({
       dataView.setUint32(8, fd, false);
     }
 
-    return { errno: undefined, ret: 0 };
+    return { errno: undefined, ret: 0n };
   };
 
   const mockInfo: IoctlMock["mockInfo"] = () => {
