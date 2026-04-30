@@ -1,6 +1,7 @@
 import { createUdmabufAllocatorFactory } from "../../lib/udmabuf/udmabuf-allocator.ts";
 import type { TDmabufUdmabufAllocatorKernelInterface } from "../../lib/kernel-interface.ts";
 import nodeAssert from "node:assert";
+import { describe, it } from "mocha";
 
 type TMockInfo = {
   ioctlCalls: { fd: number; request: bigint; argCopy: Uint8Array }[];

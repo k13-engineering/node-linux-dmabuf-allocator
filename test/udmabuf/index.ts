@@ -1,5 +1,6 @@
 import { createDefaultUdmabufAllocator } from "../../lib/udmabuf/index.ts";
 import nodeAssert from "node:assert";
+import { describe, it } from "mocha";
 
 describe("udmabuf/index", () => {
 

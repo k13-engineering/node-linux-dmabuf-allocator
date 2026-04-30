@@ -1,6 +1,7 @@
 import { createDmabufHeapManager, findDefaultDmabufHeapDevFolder } from "../../lib/dmabuf-heap/dmabuf-heap-manager.ts";
 import type { TDmabufHeapKernelInterface } from "../../lib/kernel-interface.ts";
 import nodeAssert from "node:assert";
+import { describe, it } from "mocha";
 
 type TMockInfo = {
   readdirCalls: { path: string }[];

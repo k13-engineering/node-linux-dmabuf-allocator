@@ -1,5 +1,6 @@
 import { createDefaultAllocationSizeDeterminer } from "../../lib/allocation-size.ts";
 import nodeAssert from "node:assert";
+import { describe, it } from "mocha";
 
 describe("allocation-size", () => {
   [

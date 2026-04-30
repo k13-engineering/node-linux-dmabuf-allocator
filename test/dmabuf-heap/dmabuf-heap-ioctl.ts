@@ -1,6 +1,7 @@
 import { createDmabufHeapIoctls } from "../../lib/dmabuf-heap/dmabuf-heap-ioctl.ts";
 import type { TDmabufHeapIoctlKernelInterface } from "../../lib/kernel-interface.ts";
 import nodeAssert from "node:assert";
+import { describe, it } from "mocha";
 
 type TMockInfo = {
   ioctlCalls: {

@@ -1,4 +1,5 @@
 import { createDefaultDmabufHeapManager } from "../../lib/index.ts";
+import { describe, it } from "mocha";
 
 describe("index", () => {
   it("should try to create default dmabuf heap manager", () => {
