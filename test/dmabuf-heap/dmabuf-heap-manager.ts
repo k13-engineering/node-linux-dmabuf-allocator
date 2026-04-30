@@ -1,11 +1,18 @@
-import { createDmabufHeapManager, findDefaultDmabufHeapDevFolder } from "../../lib/dmabuf-heap/dmabuf-heap-manager.ts";
+import {
+  createDmabufHeapManager,
+  findDefaultDmabufHeapDevFolder,
+} from "../../lib/dmabuf-heap/dmabuf-heap-manager.ts";
 import type { TDmabufHeapKernelInterface } from "../../lib/kernel-interface.ts";
 import nodeAssert from "node:assert";
 import { describe, it } from "mocha";
 
 type TMockInfo = {
   readdirCalls: { path: string }[];
-  openCalls: { path: string; flags: number, result: ReturnType<TDmabufHeapKernelInterface["open"]> }[];
+  openCalls: {
+    path: string;
+    flags: number;
+    result: ReturnType<TDmabufHeapKernelInterface["open"]>;
+  }[];
   closeCalls: { fd: number }[];
   dupCalls: { fd: number }[];
   ioctlCalls: { fd: number; request: bigint; argCopy: Uint8Array }[];
@@ -20,11 +27,10 @@ type TKernelInterfaceMock = TDmabufHeapKernelInterface & {
 
 // eslint-disable-next-line max-statements
 const createKernelInterfaceMock = ({
-  endianness = "LE"
+  endianness = "LE",
 }: {
-  endianness?: "LE" | "BE"
+  endianness?: "LE" | "BE";
 } = {}): TKernelInterfaceMock => {
-
   let readdirCalls: TMockInfo["readdirCalls"] = [];
   let openCalls: TMockInfo["openCalls"] = [];
   let closeCalls: TMockInfo["closeCalls"] = [];
@@ -47,7 +53,6 @@ const createKernelInterfaceMock = ({
   };
 
   const open: TKernelInterfaceMock["open"] = ({ path, flags }) => {
-
     let result: ReturnType<TKernelInterfaceMock["open"]>;
 
     if (openErrno === undefined) {
@@ -112,15 +117,21 @@ const createKernelInterfaceMock = ({
     return 4096;
   };
 
-  const setAvailableHeaps: TKernelInterfaceMock["setAvailableHeaps"] = (heaps: string[]) => {
+  const setAvailableHeaps: TKernelInterfaceMock["setAvailableHeaps"] = (
+    heaps: string[],
+  ) => {
     availableHeaps = heaps;
   };
 
-  const setReaddirError: TKernelInterfaceMock["setReaddirError"] = (errno: number | undefined) => {
+  const setReaddirError: TKernelInterfaceMock["setReaddirError"] = (
+    errno: number | undefined,
+  ) => {
     readdirErrno = errno;
   };
 
-  const setOpenError: TKernelInterfaceMock["setOpenError"] = (errno: number | undefined) => {
+  const setOpenError: TKernelInterfaceMock["setOpenError"] = (
+    errno: number | undefined,
+  ) => {
     openErrno = errno;
   };
 
@@ -130,7 +141,7 @@ const createKernelInterfaceMock = ({
       openCalls,
       closeCalls,
       dupCalls,
-      ioctlCalls
+      ioctlCalls,
     };
   };
 
@@ -148,12 +159,11 @@ const createKernelInterfaceMock = ({
     mockInfo,
     setAvailableHeaps,
     setReaddirError,
-    setOpenError
+    setOpenError,
   };
 };
 
 describe("dmabuf-heap-manager", () => {
-
   describe("findDefaultDmabufHeapDevFolder", () => {
     it("should return the default dmabuf heap dev folder path", () => {
       const result = findDefaultDmabufHeapDevFolder();
@@ -162,21 +172,23 @@ describe("dmabuf-heap-manager", () => {
   });
 
   describe("createDmabufHeapManager", () => {
-
     it("should throw error if dmabuf heap dev folder cannot be read during initialization", () => {
       const mock = createKernelInterfaceMock();
 
       const ENOENT = 2;
       mock.setReaddirError(ENOENT);
 
-      nodeAssert.throws(() => {
-        createDmabufHeapManager({
-          dmabufHeapDevFolder: "/dev/dma_heap",
-          kernelInterface: mock
-        });
-      }, {
-        message: /valid dmabuf heap dev folder required/
-      });
+      nodeAssert.throws(
+        () => {
+          createDmabufHeapManager({
+            dmabufHeapDevFolder: "/dev/dma_heap",
+            kernelInterface: mock,
+          });
+        },
+        {
+          message: /valid dmabuf heap dev folder required/,
+        },
+      );
     });
 
     it("should successfully initialize when dmabuf heap dev folder exists", () => {
@@ -185,24 +197,29 @@ describe("dmabuf-heap-manager", () => {
 
       const manager = createDmabufHeapManager({
         dmabufHeapDevFolder: "/dev/dma_heap",
-        kernelInterface: mock
+        kernelInterface: mock,
       });
 
       nodeAssert.ok(manager);
-      nodeAssert.strictEqual(typeof manager.findAvailableDmabufHeapInfos, "function");
-      nodeAssert.strictEqual(typeof manager.findDmabufHeapInfosBySpecification, "function");
+      nodeAssert.strictEqual(
+        typeof manager.findAvailableDmabufHeapInfos,
+        "function",
+      );
+      nodeAssert.strictEqual(
+        typeof manager.findDmabufHeapInfosBySpecification,
+        "function",
+      );
       nodeAssert.strictEqual(typeof manager.openDmabufHeapByName, "function");
     });
 
     describe("findAvailableDmabufHeapInfos", () => {
-
       it("should return heap infos for well-known heaps", () => {
         const mock = createKernelInterfaceMock();
         mock.setAvailableHeaps(["system", "default_cma_region"]);
 
         const manager = createDmabufHeapManager({
           dmabufHeapDevFolder: "/dev/dma_heap",
-          kernelInterface: mock
+          kernelInterface: mock,
         });
 
         const heaps = manager.findAvailableDmabufHeapInfos();
@@ -210,12 +227,18 @@ describe("dmabuf-heap-manager", () => {
         nodeAssert.strictEqual(heaps.length, 2);
 
         nodeAssert.strictEqual(heaps[0].name, "system");
-        nodeAssert.strictEqual(heaps[0].properties.physicalMemory.contiguous, false);
+        nodeAssert.strictEqual(
+          heaps[0].properties.physicalMemory.contiguous,
+          false,
+        );
         nodeAssert.strictEqual(heaps[0].properties.cachable, true);
         nodeAssert.strictEqual(heaps[0].properties.protected, false);
 
         nodeAssert.strictEqual(heaps[1].name, "default_cma_region");
-        nodeAssert.strictEqual(heaps[1].properties.physicalMemory.contiguous, true);
+        nodeAssert.strictEqual(
+          heaps[1].properties.physicalMemory.contiguous,
+          true,
+        );
         nodeAssert.strictEqual(heaps[1].properties.cachable, true);
         nodeAssert.strictEqual(heaps[1].properties.protected, false);
       });
@@ -226,14 +249,17 @@ describe("dmabuf-heap-manager", () => {
 
         const manager = createDmabufHeapManager({
           dmabufHeapDevFolder: "/dev/dma_heap",
-          kernelInterface: mock
+          kernelInterface: mock,
         });
 
         const heaps = manager.findAvailableDmabufHeapInfos();
 
         nodeAssert.strictEqual(heaps.length, 1);
         nodeAssert.strictEqual(heaps[0].name, "custom_heap");
-        nodeAssert.strictEqual(heaps[0].properties.physicalMemory.contiguous, undefined);
+        nodeAssert.strictEqual(
+          heaps[0].properties.physicalMemory.contiguous,
+          undefined,
+        );
         nodeAssert.strictEqual(heaps[0].properties.cachable, undefined);
         nodeAssert.strictEqual(heaps[0].properties.protected, undefined);
       });
@@ -244,18 +270,21 @@ describe("dmabuf-heap-manager", () => {
 
         const manager = createDmabufHeapManager({
           dmabufHeapDevFolder: "/dev/dma_heap",
-          kernelInterface: mock
+          kernelInterface: mock,
         });
 
         // Change error after initialization
         const EACCES = 13;
         mock.setReaddirError(EACCES);
 
-        nodeAssert.throws(() => {
-          manager.findAvailableDmabufHeapInfos();
-        }, {
-          message: /failed to read dmabuf heap dev folder.*errno 13/
-        });
+        nodeAssert.throws(
+          () => {
+            manager.findAvailableDmabufHeapInfos();
+          },
+          {
+            message: /failed to read dmabuf heap dev folder.*errno 13/,
+          },
+        );
       });
 
       it("should call readdir with correct path", () => {
@@ -265,33 +294,36 @@ describe("dmabuf-heap-manager", () => {
         const customPath = "/custom/dma_heap";
         const manager = createDmabufHeapManager({
           dmabufHeapDevFolder: customPath,
-          kernelInterface: mock
+          kernelInterface: mock,
         });
 
         manager.findAvailableDmabufHeapInfos();
 
         const { readdirCalls } = mock.mockInfo();
-        nodeAssert.ok(readdirCalls.some((call) => call.path === customPath));
+        nodeAssert.ok(
+          readdirCalls.some((call) => {
+            return call.path === customPath;
+          }),
+        );
       });
     });
 
     describe("findDmabufHeapInfosBySpecification", () => {
-
       it("should filter heaps by required contiguous physical memory", () => {
         const mock = createKernelInterfaceMock();
         mock.setAvailableHeaps(["system", "default_cma_region"]);
 
         const manager = createDmabufHeapManager({
           dmabufHeapDevFolder: "/dev/dma_heap",
-          kernelInterface: mock
+          kernelInterface: mock,
         });
 
         const heaps = manager.findDmabufHeapInfosBySpecification({
           specification: {
             physicalMemory: { contiguous: "required" },
             cachable: "optional",
-            protected: "optional"
-          }
+            protected: "optional",
+          },
         });
 
         nodeAssert.strictEqual(heaps.length, 1);
@@ -304,15 +336,15 @@ describe("dmabuf-heap-manager", () => {
 
         const manager = createDmabufHeapManager({
           dmabufHeapDevFolder: "/dev/dma_heap",
-          kernelInterface: mock
+          kernelInterface: mock,
         });
 
         const heaps = manager.findDmabufHeapInfosBySpecification({
           specification: {
             physicalMemory: { contiguous: "forbidden" },
             cachable: "optional",
-            protected: "optional"
-          }
+            protected: "optional",
+          },
         });
 
         nodeAssert.strictEqual(heaps.length, 1);
@@ -325,15 +357,15 @@ describe("dmabuf-heap-manager", () => {
 
         const manager = createDmabufHeapManager({
           dmabufHeapDevFolder: "/dev/dma_heap",
-          kernelInterface: mock
+          kernelInterface: mock,
         });
 
         const heaps = manager.findDmabufHeapInfosBySpecification({
           specification: {
             physicalMemory: { contiguous: "optional" },
             cachable: "required",
-            protected: "optional"
-          }
+            protected: "optional",
+          },
         });
 
         nodeAssert.strictEqual(heaps.length, 2);
@@ -345,15 +377,15 @@ describe("dmabuf-heap-manager", () => {
 
         const manager = createDmabufHeapManager({
           dmabufHeapDevFolder: "/dev/dma_heap",
-          kernelInterface: mock
+          kernelInterface: mock,
         });
 
         const heaps = manager.findDmabufHeapInfosBySpecification({
           specification: {
             physicalMemory: { contiguous: "optional" },
             cachable: "forbidden",
-            protected: "optional"
-          }
+            protected: "optional",
+          },
         });
 
         nodeAssert.strictEqual(heaps.length, 0);
@@ -365,15 +397,15 @@ describe("dmabuf-heap-manager", () => {
 
         const manager = createDmabufHeapManager({
           dmabufHeapDevFolder: "/dev/dma_heap",
-          kernelInterface: mock
+          kernelInterface: mock,
         });
 
         const heaps = manager.findDmabufHeapInfosBySpecification({
           specification: {
             physicalMemory: { contiguous: "optional" },
             cachable: "optional",
-            protected: "required"
-          }
+            protected: "required",
+          },
         });
 
         nodeAssert.strictEqual(heaps.length, 0);
@@ -385,15 +417,15 @@ describe("dmabuf-heap-manager", () => {
 
         const manager = createDmabufHeapManager({
           dmabufHeapDevFolder: "/dev/dma_heap",
-          kernelInterface: mock
+          kernelInterface: mock,
         });
 
         const heaps = manager.findDmabufHeapInfosBySpecification({
           specification: {
             physicalMemory: { contiguous: "optional" },
             cachable: "optional",
-            protected: "forbidden"
-          }
+            protected: "forbidden",
+          },
         });
 
         nodeAssert.strictEqual(heaps.length, 1);
@@ -406,15 +438,15 @@ describe("dmabuf-heap-manager", () => {
 
         const manager = createDmabufHeapManager({
           dmabufHeapDevFolder: "/dev/dma_heap",
-          kernelInterface: mock
+          kernelInterface: mock,
         });
 
         const heaps = manager.findDmabufHeapInfosBySpecification({
           specification: {
             physicalMemory: { contiguous: "preferred" },
             cachable: "preferred",
-            protected: "optional"
-          }
+            protected: "optional",
+          },
         });
 
         nodeAssert.strictEqual(heaps.length, 2);
@@ -426,15 +458,15 @@ describe("dmabuf-heap-manager", () => {
 
         const manager = createDmabufHeapManager({
           dmabufHeapDevFolder: "/dev/dma_heap",
-          kernelInterface: mock
+          kernelInterface: mock,
         });
 
         const heaps = manager.findDmabufHeapInfosBySpecification({
           specification: {
             physicalMemory: { contiguous: "required" },
             cachable: "optional",
-            protected: "optional"
-          }
+            protected: "optional",
+          },
         });
 
         nodeAssert.strictEqual(heaps.length, 0);
@@ -446,15 +478,15 @@ describe("dmabuf-heap-manager", () => {
 
         const manager = createDmabufHeapManager({
           dmabufHeapDevFolder: "/dev/dma_heap",
-          kernelInterface: mock
+          kernelInterface: mock,
         });
 
         const heaps = manager.findDmabufHeapInfosBySpecification({
           specification: {
             physicalMemory: { contiguous: "required" },
             cachable: "required",
-            protected: "forbidden"
-          }
+            protected: "forbidden",
+          },
         });
 
         nodeAssert.strictEqual(heaps.length, 1);
@@ -463,14 +495,13 @@ describe("dmabuf-heap-manager", () => {
     });
 
     describe("openDmabufHeapByName", () => {
-
       it("should successfully open a heap by name", () => {
         const mock = createKernelInterfaceMock();
         mock.setAvailableHeaps(["system"]);
 
         const manager = createDmabufHeapManager({
           dmabufHeapDevFolder: "/dev/dma_heap",
-          kernelInterface: mock
+          kernelInterface: mock,
         });
 
         const result = manager.openDmabufHeapByName({ name: "system" });
@@ -485,7 +516,7 @@ describe("dmabuf-heap-manager", () => {
 
         const manager = createDmabufHeapManager({
           dmabufHeapDevFolder: "/dev/dma_heap",
-          kernelInterface: mock
+          kernelInterface: mock,
         });
 
         manager.openDmabufHeapByName({ name: "system" });
@@ -494,10 +525,14 @@ describe("dmabuf-heap-manager", () => {
         const O_CLOEXEC = 0x80000;
 
         const { openCalls } = mock.mockInfo();
-        nodeAssert.ok(openCalls.some((call) =>
-          call.path === "/dev/dma_heap/system" &&
-          call.flags === (O_RDWR | O_CLOEXEC)
-        ));
+        nodeAssert.ok(
+          openCalls.some((call) => {
+            return (
+              call.path === "/dev/dma_heap/system" &&
+              call.flags === (O_RDWR | O_CLOEXEC)
+            );
+          }),
+        );
       });
 
       it("should close the original fd after duping", () => {
@@ -506,7 +541,7 @@ describe("dmabuf-heap-manager", () => {
 
         const manager = createDmabufHeapManager({
           dmabufHeapDevFolder: "/dev/dma_heap",
-          kernelInterface: mock
+          kernelInterface: mock,
         });
 
         manager.openDmabufHeapByName({ name: "system" });
@@ -524,8 +559,12 @@ describe("dmabuf-heap-manager", () => {
 
         nodeAssert.ok(openCall !== undefined);
 
-        const dupedFd = dupCalls.find((call) => call.fd === openCall.result.fd);
-        const closedFd = closeCalls.find((call) => call.fd === openCall.result.fd);
+        const dupedFd = dupCalls.find((call) => {
+          return call.fd === openCall.result.fd;
+        });
+        const closedFd = closeCalls.find((call) => {
+          return call.fd === openCall.result.fd;
+        });
 
         nodeAssert.ok(dupedFd, "opened fd should be duped");
         nodeAssert.ok(closedFd, "opened fd should be closed");
@@ -537,7 +576,7 @@ describe("dmabuf-heap-manager", () => {
 
         const manager = createDmabufHeapManager({
           dmabufHeapDevFolder: "/dev/dma_heap",
-          kernelInterface: mock
+          kernelInterface: mock,
         });
 
         const ENOENT = 2;
@@ -556,7 +595,7 @@ describe("dmabuf-heap-manager", () => {
 
         const manager = createDmabufHeapManager({
           dmabufHeapDevFolder: "/dev/dma_heap",
-          kernelInterface: mock
+          kernelInterface: mock,
         });
 
         const EACCES = 13;
@@ -575,7 +614,7 @@ describe("dmabuf-heap-manager", () => {
 
         const manager = createDmabufHeapManager({
           dmabufHeapDevFolder: "/dev/dma_heap",
-          kernelInterface: mock
+          kernelInterface: mock,
         });
 
         const EIO = 5;
@@ -595,13 +634,17 @@ describe("dmabuf-heap-manager", () => {
         const customPath = "/custom/path";
         const manager = createDmabufHeapManager({
           dmabufHeapDevFolder: customPath,
-          kernelInterface: mock
+          kernelInterface: mock,
         });
 
         manager.openDmabufHeapByName({ name: "system" });
 
         const { openCalls } = mock.mockInfo();
-        nodeAssert.ok(openCalls.some((call) => call.path === `${customPath}/system`));
+        nodeAssert.ok(
+          openCalls.some((call) => {
+            return call.path === `${customPath}/system`;
+          }),
+        );
       });
 
       it("should return heap with working allocate function", () => {
@@ -610,7 +653,7 @@ describe("dmabuf-heap-manager", () => {
 
         const manager = createDmabufHeapManager({
           dmabufHeapDevFolder: "/dev/dma_heap",
-          kernelInterface: mock
+          kernelInterface: mock,
         });
 
         const result = manager.openDmabufHeapByName({ name: "system" });
@@ -630,7 +673,7 @@ describe("dmabuf-heap-manager", () => {
 
         const manager = createDmabufHeapManager({
           dmabufHeapDevFolder: "/dev/dma_heap",
-          kernelInterface: mock
+          kernelInterface: mock,
         });
 
         const result = manager.openDmabufHeapByName({ name: "system" });
@@ -649,7 +692,7 @@ describe("dmabuf-heap-manager", () => {
 
         const manager = createDmabufHeapManager({
           dmabufHeapDevFolder: "/dev/dma_heap",
-          kernelInterface: mock
+          kernelInterface: mock,
         });
 
         const result = manager.openDmabufHeapByName({ name: "system" });

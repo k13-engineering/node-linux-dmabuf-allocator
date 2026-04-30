@@ -26,11 +26,13 @@ const createUdmabufAllocatorFactory = ({ kernelInterface }: { kernelInterface: T
     const flags = UDMABUF_FLAGS_CLOEXEC;
     const offset = 0n;
 
-    const udmabufCreateStruct = Buffer.alloc(24);
-    udmabufCreateStruct.writeUInt32LE(memfd, 0);
-    udmabufCreateStruct.writeUInt32LE(flags, 4);
-    udmabufCreateStruct.writeBigUInt64LE(offset, 8);
-    udmabufCreateStruct.writeBigUInt64LE(BigInt(size), 16);
+    // TODO: big endian
+    const udmabufCreateStruct = new Uint8Array(24);
+    const dataView = new DataView(udmabufCreateStruct.buffer);
+    dataView.setUint32(0, memfd, true);
+    dataView.setUint32(4, flags, true);
+    dataView.setBigUint64(8, offset, true);
+    dataView.setBigUint64(16, BigInt(size), true);
 
     const { errno: ioctlErrno, ret } = kernelInterface.ioctl({ fd: udmabufFd, request: UDMABUF_CREATE, arg: udmabufCreateStruct });
     if (ioctlErrno !== undefined) {

@@ -1,4 +1,5 @@
 import type { TDmabufHeapKernelInterface } from "./kernel-interface.ts";
+// eslint-disable-next-line k13-engineering/no-import-alias
 import { ioctl as nativeIoctl } from "@k13engineering/po6-ioctl";
 import nodeFs from "node:fs";
 import nodeOs from "node:os";

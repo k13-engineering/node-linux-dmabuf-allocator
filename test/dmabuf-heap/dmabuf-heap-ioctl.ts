@@ -70,7 +70,9 @@ describe("dmabuf-heap", () => {
 
       const mock = createIoctlInterfaceMock({
         endianness: "LE",
-        allocFd: () => fdToAllocate
+        allocFd: () => {
+          return fdToAllocate;
+        }
       });
 
       const ioctls = createDmabufHeapIoctls({ kernelIoctlInterface: mock });
@@ -116,7 +118,9 @@ describe("dmabuf-heap", () => {
 
       const mock = createIoctlInterfaceMock({
         endianness: "BE",
-        allocFd: () => fdToAllocate
+        allocFd: () => {
+          return fdToAllocate;
+        }
       });
 
       const ioctls = createDmabufHeapIoctls({ kernelIoctlInterface: mock });
