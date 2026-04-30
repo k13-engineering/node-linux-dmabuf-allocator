@@ -20,6 +20,6 @@
     "typescript": "^6.0.3"
   },
   "dependencies": {
-    "syscall-napi": "^0.1.6"
+    "syscall-napi": "^0.2.2"
   }
 }
