@@ -1,9 +1,38 @@
 import type { TDmabufHeapKernelInterface } from "./kernel-interface.ts";
-// eslint-disable-next-line k13-engineering/no-import-alias
-import { ioctl as nativeIoctl } from "@k13engineering/po6-ioctl";
 import nodeFs from "node:fs";
 import nodeOs from "node:os";
 import { syscall, syscallNumbers } from "syscall-napi";
+
+type TIoctlResult = {
+  errno: number;
+  ret: undefined;
+} | {
+  errno: undefined;
+  ret: bigint;
+};
+
+const nativeIoctl = ({ fd, request, arg }: { fd: number, request: bigint, arg: bigint | Uint8Array }): TIoctlResult => {
+  const { errno, ret } = syscall({
+    syscallNumber: syscallNumbers.ioctl,
+    args: [
+      BigInt(fd),
+      request,
+      arg
+    ],
+  });
+
+  if (errno !== undefined) {
+    return {
+      errno,
+      ret: undefined,
+    };
+  }
+
+  return {
+    errno,
+    ret,
+  };
+};
 
 const createDefaultDmabufHeapAllocatorLinuxInterface = (): TDmabufHeapKernelInterface => {
 

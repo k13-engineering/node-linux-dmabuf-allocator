@@ -20,7 +20,6 @@
     "typescript": "^6.0.3"
   },
   "dependencies": {
-    "@k13engineering/po6-ioctl": "^0.0.2",
     "syscall-napi": "^0.1.6"
   }
 }
