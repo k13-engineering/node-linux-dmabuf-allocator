@@ -20,6 +20,7 @@
     "typescript": "^6.0.3"
   },
   "dependencies": {
+    "linux-devnode": "^0.1.2",
     "syscall-napi": "^0.2.2"
   }
 }

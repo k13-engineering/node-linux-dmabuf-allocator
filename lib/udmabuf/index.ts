@@ -1,3 +1,4 @@
+import { openCharacterDeviceBySysfsDevPath } from "linux-devnode";
 import { type TDmabufAllocator } from "../dmabuf-allocator-interface.ts";
 import { createDefaultDmabufHeapAllocatorLinuxInterface } from "../kernel-interface-impl-linux.ts";
 import { createUdmabufAllocatorFactory } from "./udmabuf-allocator.ts";
@@ -8,17 +9,17 @@ const O_CLOEXEC = 0x80000;
 const createDefaultUdmabufAllocator = (): TDmabufAllocator => {
   const kernelInterface = createDefaultDmabufHeapAllocatorLinuxInterface();
 
-  const { errno, fd } = kernelInterface.open({
-    path: "/dev/udmabuf",
-    flags: O_RDWR | O_CLOEXEC
+  const { error: openError, fd: udmabufFd } = openCharacterDeviceBySysfsDevPath({
+    sysfsDevPath: "/sys/class/misc/udmabuf/dev",
+    flags: BigInt(O_RDWR | O_CLOEXEC)
   });
 
-  if (errno !== undefined) {
-    throw Error(`failed to open /dev/udmabuf, errno ${errno}. Is the udmabuf kernel module loaded?`);
+  if (openError !== undefined) {
+    throw Error("Failed to open udmabuf device. Is the udmabuf kernel module loaded?", { cause: openError });
   }
 
   const udmabufAllocatorFactory = createUdmabufAllocatorFactory({ kernelInterface });
-  return udmabufAllocatorFactory.createUdmabufAllocator({ udmabufFd: fd });
+  return udmabufAllocatorFactory.createUdmabufAllocator({ udmabufFd });
 };
 
 export {
