@@ -15,7 +15,7 @@ describe("udmabuf/index", () => {
       } catch (ex) {
         const err = ex as Error;
 
-        if (err.message.includes("failed to open /dev/udmabuf")) {
+        if (err.message.includes("Is the udmabuf kernel module loaded?")) {
           // udmabuf kernel module not loaded, skip test
           return;
         }
